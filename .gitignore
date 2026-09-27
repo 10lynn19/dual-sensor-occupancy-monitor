@@ -1,0 +1,25 @@
+# macOS and editor metadata
+.DS_Store
+.idea/
+.vscode/
+.cursor/
+
+# Python environments and generated files
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local secrets and device-specific network settings
+**/FusionWifi_config.h
+.env
+.env.*
+!.env.example
+
+# Course submission artifacts and raw demo media
+Final Code/
+Final Code.zip
+Final paper team 24.pdf
+vedio/
+radar/

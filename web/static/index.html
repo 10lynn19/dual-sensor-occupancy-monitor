@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Room Occupancy — Dual-Sensor Fusion</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/css/style.css" />
+  </head>
+  <body>
+    <div class="bg-pattern" aria-hidden="true"></div>
+    <header class="site-header">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <div>
+          <h1>Room Occupancy Dashboard</h1>
+          <p class="subtitle">Thermal + proximity fusion over Wi-Fi · real-time confidence</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="conn-pill" id="connPill" role="status">
+          <span class="dot" id="connDot"></span>
+          <span id="connText">Connecting…</span>
+        </div>
+        <button type="button" class="btn btn-ghost" id="btnDemo" title="Demo only: sends fake HTTP events to the server (not real sensors); count will increase.">Simulate events</button>
+        <button type="button" class="btn btn-primary" id="btnReset">Reset count</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="hero card card-elevated" aria-labelledby="occupancy-heading">
+        <div class="hero-inner">
+          <div>
+            <h2 id="occupancy-heading" class="section-label">People inside</h2>
+            <p class="hero-hint">Fused estimate from both sensors (see event log for detail)</p>
+          </div>
+          <div class="count-wrap">
+            <span class="count" id="roomCount">0</span>
+            <span class="count-unit">persons</span>
+          </div>
+        </div>
+        <div class="hero-footer">
+          <span class="tag tag-blue">Defer ~850 ms · proximity ↔ thermal → one count</span>
+          <span class="tag tag-yellow">Wi-Fi TCP :8766 · HTTP · WS + 400ms poll</span>
+        </div>
+      </section>
+
+      <section class="grid-two">
+        <article class="card sensor-card sensor-thermal">
+          <header class="sensor-head">
+            <span class="sensor-icon" aria-hidden="true">◎</span>
+            <div>
+              <h3>Thermal camera</h3>
+              <p class="sensor-role">MLX90640 · blob track &amp; line crossing</p>
+            </div>
+            <span class="badge badge-thermal">Thermal</span>
+          </header>
+          <ul class="sensor-list">
+            <li><strong>Side-by-side</strong> — two parallel tracks through the door</li>
+            <li><strong>Wheelchair</strong> — low profile, wider stable blob</li>
+            <li><strong>ENTER / EXIT</strong> — direction from door line logic</li>
+          </ul>
+          <div class="sensor-meta" id="thermalMeta">No event yet</div>
+        </article>
+
+        <article class="card sensor-card sensor-prox">
+          <header class="sensor-head">
+            <span class="sensor-icon" aria-hidden="true">◈</span>
+            <div>
+              <h3>Proximity pair</h3>
+              <p class="sensor-role">Beam sequence · queue &amp; single file</p>
+            </div>
+            <span class="badge badge-prox">Proximity</span>
+          </header>
+          <ul class="sensor-list">
+            <li><strong>Single pass</strong> — clean A/B sequence</li>
+            <li><strong>Queued line</strong> — multiple people in order</li>
+            <li><strong>High timing stability</strong> — anchors fusion clock</li>
+          </ul>
+          <div class="sensor-meta" id="proxMeta">No event yet</div>
+        </article>
+      </section>
+
+      <section class="card">
+        <header class="section-row">
+          <h2 class="section-title">Fusion log</h2>
+          <span class="muted" id="wsClients">Clients: —</span>
+        </header>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Dir</th>
+                <th>Δ</th>
+                <th>Confidence</th>
+                <th>Reason</th>
+                <th>Review</th>
+              </tr>
+            </thead>
+            <tbody id="logBody">
+              <tr class="empty-row">
+                <td colspan="6">Waiting for events from <code>/api/event</code>…</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card card-muted">
+        <h2 class="section-title">Wi-Fi integration</h2>
+        <p class="integration-text">
+          Primary path (lab-style Wi-Fi): each ESP32 opens a TCP connection to
+          <code>&lt;host&gt;:8766</code>, sends <strong>one JSON object per line</strong> ending with
+          <code>\n</code> (same newline framing as lab07). The fusion server assigns
+          <code>ts_ms</code> at <strong>receive time</strong> on the PC — ESP32 clocks are not used for pairing.
+          Optional: <code>POST http://&lt;host&gt;:8765/api/event</code> with the same JSON fields.
+          Fields: <code>sensor</code>, <code>event_id</code>, <code>direction</code>, <code>delta_est</code>,
+          <code>features</code>, <code>confidence_raw</code>.
+          Live UI: <code>ws://&lt;host&gt;:8765/ws</code>.
+          <strong>Phone hotspot:</strong> put the laptop’s IPv4 on that hotspot in <code>FusionWifi_config.h</code>
+          as <code>FUSION_HOST</code>; open <code>http://&lt;same-ip&gt;:8765/</code>. Use 2.4&nbsp;GHz Wi‑Fi.
+        </p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>Dual-sensor fusion · blue / white / yellow theme</span>
+    </footer>
+
+    <script src="/static/js/app.js" type="module"></script>
+  </body>
+</html>
