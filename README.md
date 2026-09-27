@@ -2,6 +2,12 @@
 
 A real-time occupancy monitoring system that combines thermal imaging and infrared beam sensing to count people entering and leaving a room. Two ESP32 devices send events over Wi-Fi to a FastAPI service, which fuses the readings and updates a browser dashboard through WebSockets.
 
+## Demo
+
+![Room occupancy monitor demonstration](assets/demo.gif)
+
+The recording is shown at 3× speed and demonstrates the end-to-end sensor fusion workflow and live occupancy dashboard.
+
 ## Highlights
 
 - Combines an MLX90640 thermal array with an E18-D80NK proximity sensor
